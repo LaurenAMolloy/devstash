@@ -2,7 +2,23 @@
 
 ## Status
 
+In Progress
+
 ## Current Feature
+
+### Dashboard UI Phase 3
+
+Build out the main content area of the dashboard using mock data. See full spec: @context/features/dashboard-phase-3-spec.md
+
+**Requirements:**
+- 4 stats cards at the top (total items, collections, favorite items, favorite collections)
+- Pinned items section
+- Recent collections section
+- 10 recent items section
+
+**References:**
+- @context/screenshots/dashboard-ui-main.png
+- @src/lib/mock-data.js
 
 ## Notes
 
