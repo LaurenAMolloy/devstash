@@ -7,7 +7,7 @@ import { Search, Plus, FolderPlus, PanelLeft } from "lucide-react";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { MainContent } from "@/components/dashboard/main-content";
 import type { CollectionWithMeta } from "@/lib/db/collections";
-import type { ItemWithMeta } from "@/lib/db/items";
+import type { ItemWithMeta, ItemTypeWithCount } from "@/lib/db/items";
 
 interface DashboardShellProps {
   collections: CollectionWithMeta[];
@@ -15,9 +15,10 @@ interface DashboardShellProps {
   pinnedItems: ItemWithMeta[];
   recentItems: ItemWithMeta[];
   itemCounts: { total: number; favorites: number };
+  itemTypes: ItemTypeWithCount[];
 }
 
-export function DashboardShell({ collections, collectionCounts, pinnedItems, recentItems, itemCounts }: DashboardShellProps) {
+export function DashboardShell({ collections, collectionCounts, pinnedItems, recentItems, itemCounts, itemTypes }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
@@ -62,7 +63,7 @@ export function DashboardShell({ collections, collectionCounts, pinnedItems, rec
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} itemTypes={itemTypes} collections={collections} />
         <MainContent
           collections={collections}
           collectionCounts={collectionCounts}

@@ -15,36 +15,35 @@ import {
   Folder,
   Settings,
   X,
+  ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { mockUser, mockItemTypes, mockCollections } from "@/lib/mock-data";
+import type { CollectionWithMeta } from "@/lib/db/collections";
+import type { ItemTypeWithCount } from "@/lib/db/items";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  code: Code2,
-  sparkles: Sparkles,
-  terminal: Terminal,
-  "file-text": FileText,
-  file: File,
-  image: Image,
-  link: Link2,
+  Code: Code2,
+  Sparkles: Sparkles,
+  Terminal: Terminal,
+  StickyNote: FileText,
+  File: File,
+  Image: Image,
+  Link: Link2,
 };
 
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  itemTypes: ItemTypeWithCount[];
+  collections: CollectionWithMeta[];
 }
 
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
+export function Sidebar({ isOpen, onClose, itemTypes, collections }: SidebarProps) {
   const [typesExpanded, setTypesExpanded] = useState(true);
   const [collectionsExpanded, setCollectionsExpanded] = useState(true);
 
-  const favoriteCollections = mockCollections.filter((c) => c.isFavorite);
-  const recentCollections = mockCollections.filter((c) => !c.isFavorite).slice(0, 4);
-
-  const userInitials = mockUser.name
-    .split(" ")
-    .map((n) => n[0])
-    .join("");
+  const favoriteCollections = collections.filter((c) => c.isFavorite);
+  const recentCollections = collections.filter((c) => !c.isFavorite).slice(0, 4);
 
   return (
     <>
@@ -99,8 +98,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
             {typesExpanded && (
               <div className="space-y-0.5 mb-2">
-                {mockItemTypes.map((type) => {
-                  const Icon = iconMap[type.icon] ?? File;
+                {itemTypes.map((type) => {
+                  const Icon = (type.icon ? iconMap[type.icon] : null) ?? File;
                   const slug = type.name.toLowerCase();
                   return (
                     <Link
@@ -109,7 +108,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                       className="flex items-center justify-between px-2 py-1.5 rounded-md text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                     >
                       <div className="flex items-center gap-2.5">
-                        <Icon className="h-3.5 w-3.5 shrink-0" />
+                        <Icon
+                          className="h-3.5 w-3.5 shrink-0"
+                          style={type.color ? { color: type.color } : undefined}
+                        />
                         <span>{type.name}</span>
                       </div>
                       <span className="text-xs tabular-nums">{type.count}</span>
@@ -136,41 +138,61 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             {collectionsExpanded && (
               <div className="space-y-3">
                 {/* Favorites */}
-                <div>
-                  <p className="px-2 py-1 text-[10px] uppercase tracking-wider text-muted-foreground/50 font-semibold">
-                    Favorites
-                  </p>
-                  {favoriteCollections.map((col) => (
-                    <Link
-                      key={col.id}
-                      href={`/collections/${col.id}`}
-                      className="flex items-center justify-between px-2 py-1.5 rounded-md text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-                    >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <Folder className="h-3.5 w-3.5 shrink-0" />
-                        <span className="truncate">{col.name}</span>
-                      </div>
-                      <Star className="h-3 w-3 shrink-0 fill-yellow-500 text-yellow-500" />
-                    </Link>
-                  ))}
-                </div>
+                {favoriteCollections.length > 0 && (
+                  <div>
+                    <p className="px-2 py-1 text-[10px] uppercase tracking-wider text-muted-foreground/50 font-semibold">
+                      Favorites
+                    </p>
+                    {favoriteCollections.map((col) => (
+                      <Link
+                        key={col.id}
+                        href={`/collections/${col.id}`}
+                        className="flex items-center justify-between px-2 py-1.5 rounded-md text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <Folder className="h-3.5 w-3.5 shrink-0" />
+                          <span className="truncate">{col.name}</span>
+                        </div>
+                        <Star className="h-3 w-3 shrink-0 fill-yellow-500 text-yellow-500" />
+                      </Link>
+                    ))}
+                  </div>
+                )}
 
-                {/* Recent / All Collections */}
-                <div>
-                  <p className="px-2 py-1 text-[10px] uppercase tracking-wider text-muted-foreground/50 font-semibold">
-                    All Collections
-                  </p>
-                  {recentCollections.map((col) => (
-                    <Link
-                      key={col.id}
-                      href={`/collections/${col.id}`}
-                      className="flex items-center gap-2.5 px-2 py-1.5 rounded-md text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-                    >
-                      <Folder className="h-3.5 w-3.5 shrink-0" />
-                      <span className="truncate">{col.name}</span>
-                    </Link>
-                  ))}
-                </div>
+                {/* Recent */}
+                {recentCollections.length > 0 && (
+                  <div>
+                    <p className="px-2 py-1 text-[10px] uppercase tracking-wider text-muted-foreground/50 font-semibold">
+                      Recent
+                    </p>
+                    {recentCollections.map((col) => (
+                      <Link
+                        key={col.id}
+                        href={`/collections/${col.id}`}
+                        className="flex items-center gap-2.5 px-2 py-1.5 rounded-md text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                      >
+                        <div
+                          className="h-2 w-2 rounded-full shrink-0"
+                          style={
+                            col.dominantColor
+                              ? { backgroundColor: col.dominantColor }
+                              : { backgroundColor: "rgba(113,113,122,0.4)" }
+                          }
+                        />
+                        <span className="truncate">{col.name}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+
+                {/* View all */}
+                <Link
+                  href="/collections"
+                  className="flex items-center gap-1 px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  View all collections
+                  <ArrowRight className="h-3 w-3" />
+                </Link>
               </div>
             )}
           </nav>
@@ -178,11 +200,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           {/* User area */}
           <div className="border-t border-border p-3 flex items-center gap-2.5">
             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted text-xs font-semibold shrink-0 select-none">
-              {userInitials}
+              DU
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium leading-tight truncate">{mockUser.name}</p>
-              <p className="text-xs text-muted-foreground truncate">{mockUser.email}</p>
+              <p className="text-sm font-medium leading-tight truncate">Demo User</p>
+              <p className="text-xs text-muted-foreground truncate">demo@devstash.io</p>
             </div>
             <button className="text-muted-foreground hover:text-foreground shrink-0 p-1 rounded hover:bg-accent transition-colors">
               <Settings className="h-4 w-4" />
