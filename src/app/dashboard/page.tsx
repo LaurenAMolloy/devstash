@@ -1,6 +1,6 @@
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { getRecentCollections, getCollectionCounts } from "@/lib/db/collections";
-import { getPinnedItems, getRecentItems, getItemCounts } from "@/lib/db/items";
+import { getPinnedItems, getRecentItems, getItemCounts, getSystemItemTypes } from "@/lib/db/items";
 import { prisma } from "@/lib/prisma";
 
 export default async function DashboardPage() {
@@ -9,15 +9,16 @@ export default async function DashboardPage() {
     select: { id: true },
   });
 
-  const [collections, collectionCounts, pinnedItems, recentItems, itemCounts] = user
+  const [collections, collectionCounts, pinnedItems, recentItems, itemCounts, itemTypes] = user
     ? await Promise.all([
         getRecentCollections(user.id),
         getCollectionCounts(user.id),
         getPinnedItems(user.id),
         getRecentItems(user.id),
         getItemCounts(user.id),
+        getSystemItemTypes(user.id),
       ])
-    : [[], { total: 0, favorites: 0 }, [], [], { total: 0, favorites: 0 }];
+    : [[], { total: 0, favorites: 0 }, [], [], { total: 0, favorites: 0 }, []];
 
   return (
     <DashboardShell
@@ -26,6 +27,7 @@ export default async function DashboardPage() {
       pinnedItems={pinnedItems}
       recentItems={recentItems}
       itemCounts={itemCounts}
+      itemTypes={itemTypes}
     />
   );
 }

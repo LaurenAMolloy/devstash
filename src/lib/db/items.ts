@@ -71,3 +71,46 @@ export async function getItemCounts(
   ]);
   return { total, favorites };
 }
+
+export type ItemTypeWithCount = {
+  id: string;
+  name: string;
+  icon: string | null;
+  color: string | null;
+  count: number;
+};
+
+export async function getSystemItemTypes(
+  userId: string
+): Promise<ItemTypeWithCount[]> {
+  const types = await prisma.itemType.findMany({
+    where: { isSystem: true },
+  });
+
+  const counts = await prisma.item.groupBy({
+    by: ["typeId"],
+    where: { userId },
+    _count: { _all: true },
+  });
+
+  const countMap = new Map(counts.map((c) => [c.typeId, c._count._all]));
+
+  const order = ["Snippet", "Prompt", "Command", "Note", "File", "Image", "URL"];
+
+  return types
+    .map((t) => ({
+      id: t.id,
+      name: t.name,
+      icon: t.icon,
+      color: t.color,
+      count: countMap.get(t.id) ?? 0,
+    }))
+    .sort((a, b) => {
+      const ai = order.indexOf(a.name);
+      const bi = order.indexOf(b.name);
+      if (ai === -1 && bi === -1) return a.name.localeCompare(b.name);
+      if (ai === -1) return 1;
+      if (bi === -1) return -1;
+      return ai - bi;
+    });
+}
