@@ -19,5 +19,6 @@ Completed
 - **2026-04-20** — Neon PostgreSQL + Prisma 7 setup completed (schema with all core models + NextAuth models, indexes, cascade deletes, initial migration applied to dev branch, system ItemTypes seeded)
 - **2026-04-20** — Seed data completed (demo user, 7 system item types, 5 collections with 18 items across snippets/prompts/commands/links; test-db script updated to display all seeded data)
 - **2026-04-20** — Dashboard collections completed (real data from Neon DB via Prisma; `src/lib/db/collections.ts` with fetch functions; border color derived from dominant item type; type icons per collection; collection stats updated)
+- **2026-04-20** — Dashboard items completed (real data from Neon DB via Prisma; `src/lib/db/items.ts` with fetch functions; pinned and recent items displayed; icon/color derived from item type; type name tag shown; pinned section hidden when empty; stats updated from DB)
 
 

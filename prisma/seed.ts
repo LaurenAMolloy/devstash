@@ -444,6 +444,12 @@ CMD ["node", "server.js"]`,
     ],
   });
 
+  // Pin a couple of items for the dashboard
+  await prisma.item.updateMany({
+    where: { id: { in: ["item-rp-1", "item-ai-1"] } },
+    data: { isPinned: true },
+  });
+
   console.log("Seeded demo user, 5 collections, and all items.");
 }
 

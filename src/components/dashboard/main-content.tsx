@@ -12,29 +12,9 @@ import {
   Package,
   ArrowRight,
 } from "lucide-react";
-import { mockItems, mockItemTypes } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import type { CollectionWithMeta } from "@/lib/db/collections";
-
-const typeIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  type_snippet: Code2,
-  type_prompt: Sparkles,
-  type_command: Terminal,
-  type_note: FileText,
-  type_file: File,
-  type_image: Image,
-  type_url: Link2,
-};
-
-const typeColorMap: Record<string, string> = {
-  type_snippet: "bg-blue-500/15 text-blue-400",
-  type_prompt: "bg-purple-500/15 text-purple-400",
-  type_command: "bg-orange-500/15 text-orange-400",
-  type_note: "bg-green-500/15 text-green-400",
-  type_file: "bg-zinc-500/15 text-zinc-400",
-  type_image: "bg-pink-500/15 text-pink-400",
-  type_url: "bg-cyan-500/15 text-cyan-400",
-};
+import type { ItemWithMeta } from "@/lib/db/items";
 
 const dbIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Code: Code2,
@@ -46,28 +26,29 @@ const dbIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Link: Link2,
 };
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+function formatDate(date: Date) {
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 interface MainContentProps {
   collections: CollectionWithMeta[];
   collectionCounts: { total: number; favorites: number };
+  pinnedItems: ItemWithMeta[];
+  recentItems: ItemWithMeta[];
+  itemCounts: { total: number; favorites: number };
 }
 
-export function MainContent({ collections, collectionCounts }: MainContentProps) {
-  const totalItems = mockItemTypes.reduce((sum, t) => sum + t.count, 0);
-  const favoriteItems = mockItems.filter((i) => i.isFavorite).length;
-
-  const pinnedItems = mockItems.filter((i) => i.isPinned);
-  const recentItems = [...mockItems]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 10);
-
+export function MainContent({
+  collections,
+  collectionCounts,
+  pinnedItems,
+  recentItems,
+  itemCounts,
+}: MainContentProps) {
   const stats = [
-    { label: "Total Items", value: totalItems, icon: Package },
+    { label: "Total Items", value: itemCounts.total, icon: Package },
     { label: "Collections", value: collectionCounts.total, icon: Folder },
-    { label: "Favorite Items", value: favoriteItems, icon: Star },
+    { label: "Favorite Items", value: itemCounts.favorites, icon: Star },
     { label: "Favorite Collections", value: collectionCounts.favorites, icon: Star },
   ];
 
@@ -176,16 +157,22 @@ export function MainContent({ collections, collectionCounts }: MainContentProps)
 }
 
 interface ItemRowProps {
-  item: (typeof mockItems)[number];
+  item: ItemWithMeta;
 }
 
 function ItemRow({ item }: ItemRowProps) {
-  const Icon = typeIconMap[item.typeId] ?? File;
-  const colorClass = typeColorMap[item.typeId] ?? "bg-zinc-500/15 text-zinc-400";
+  const Icon = (item.type.icon ? dbIconMap[item.type.icon] : null) ?? File;
 
   return (
     <div className="flex items-start gap-3 rounded-lg border border-border bg-card p-3.5 hover:border-border/80 hover:bg-accent/30 transition-colors cursor-pointer">
-      <div className={cn("flex items-center justify-center w-8 h-8 rounded-md shrink-0", colorClass)}>
+      <div
+        className={cn("flex items-center justify-center w-8 h-8 rounded-md shrink-0")}
+        style={
+          item.type.color
+            ? { backgroundColor: `${item.type.color}26`, color: item.type.color }
+            : { backgroundColor: "rgba(113,113,122,0.15)", color: "#71717a" }
+        }
+      >
         <Icon className="h-4 w-4" />
       </div>
       <div className="flex-1 min-w-0">
@@ -201,18 +188,22 @@ function ItemRow({ item }: ItemRowProps) {
         {item.description && (
           <p className="text-xs text-muted-foreground mt-0.5 truncate">{item.description}</p>
         )}
-        {item.tags.length > 0 && (
-          <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-            {item.tags.map((tag) => (
-              <span
-                key={tag}
-                className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
+        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+          <span
+            className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground"
+            style={item.type.color ? { color: item.type.color } : undefined}
+          >
+            {item.type.name}
+          </span>
+          {item.tags.map((tag) => (
+            <span
+              key={tag}
+              className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
       </div>
       <p className="text-xs text-muted-foreground shrink-0 mt-0.5">{formatDate(item.createdAt)}</p>
     </div>
