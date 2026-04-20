@@ -6,8 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Search, Plus, FolderPlus, PanelLeft } from "lucide-react";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { MainContent } from "@/components/dashboard/main-content";
+import type { CollectionWithMeta } from "@/lib/db/collections";
 
-export function DashboardShell() {
+interface DashboardShellProps {
+  collections: CollectionWithMeta[];
+  collectionCounts: { total: number; favorites: number };
+}
+
+export function DashboardShell({ collections, collectionCounts }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
@@ -53,7 +59,7 @@ export function DashboardShell() {
 
       <div className="flex flex-1 overflow-hidden">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <MainContent />
+        <MainContent collections={collections} collectionCounts={collectionCounts} />
       </div>
     </>
   );
